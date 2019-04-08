@@ -29,8 +29,10 @@ namespace Achiever.Core.Models.Feed
         public List<string> Likes { get; set; } = new List<string>();
 
         [BsonIgnore] public int LikesCount { get; set; }
-        
-        
+
+        public string When => DateTimeMapper.DeltaToString(CreatedAt);
+
+
         public List<FeedEntryComment> Comments { get; set; } = new List<FeedEntryComment>();
 
         [BsonIgnore] public int CommentsCount { get; set; }
@@ -45,6 +47,16 @@ namespace Achiever.Core.Models.Feed
         [BsonIgnore] public string AuthorProfileImage { get; set; }
 
         [BsonIgnore] public string AuthorNickname { get; set; }
+    }
+
+    public static class DateTimeMapper
+    {
+        public static string DeltaToString(DateTime datetime)
+        {
+            var delta = DateTime.Now - datetime;
+
+            return $"{delta.TotalMinutes} минут назад";
+        }
     }
 }
 
