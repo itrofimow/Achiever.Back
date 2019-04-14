@@ -25,6 +25,10 @@ namespace Achiever.Core
         Task<List<UserNotification>> GetNotifications(string userId);
 
         Task<long> CountFeedEntries(string userId);
+
+        Task<List<User>> GetFollowers(string userId);
+
+        Task<List<User>> GetFollowings(string userId);
     }
     
     public class UserService : IUserService
@@ -94,6 +98,20 @@ namespace Achiever.Core
         public Task<long> CountFeedEntries(string userId)
         {
             return _feedRepository.CountByAuthor(userId);
+        }
+
+        public async Task<List<User>> GetFollowers(string userId)
+        {
+            var user = await _userRepository.GetById(userId);
+
+            return await _userRepository.GetByIds(user.FollowersIds.ToList());
+        }
+
+        public async Task<List<User>> GetFollowings(string userId)
+        {
+            var user = await _userRepository.GetById(userId);
+
+            return await _userRepository.GetByIds(user.FollowingIds.ToList());
         }
     }
 }

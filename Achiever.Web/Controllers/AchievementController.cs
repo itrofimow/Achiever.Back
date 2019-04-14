@@ -40,9 +40,9 @@ namespace Achiever.Web.Controllers
                 Description = request.Description
             };
 
-            achievement.BackgroundImage = await Process(request.BackgroundImage);
-            achievement.FrontImage = await Process(request.FrontImage);
-            //achievement.BigImage = await Process(request.BigImage);
+            //achievement.BackgroundImage = await Process(request.BackgroundImage);
+            //achievement.FrontImage = await Process(request.FrontImage);
+            achievement.BigImage = await Process(request.BigImage);
 
             await _achievementService.Create(achievement);
         }

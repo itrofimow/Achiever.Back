@@ -84,16 +84,18 @@ namespace Achiever.Core.Feed
             var entries = entriesTask.Result;
             var authors = authorsTask.Result;
             
-            return entries.OrderByDescending(x => x.CreatedAt).Select(y =>
-            {
-                var author = authors.Single(x => x.Id == y.AuthorId);
-                return new FeedEntryResponse
+            return entries.OrderByDescending(x => x.CreatedAt)
+                .Select(y =>
                 {
-                    AuthorNickname = author.Nickname,
-                    AuthorProfileImagePath = author.ProfileImagePath,
-                    Entry = y
-                };
-            }).ToList();
+                    var author = authors.Single(x => x.Id == y.AuthorId);
+                    return new FeedEntryResponse
+                    {
+                        AuthorNickname = author.Nickname,
+                        AuthorProfileImagePath = author.ProfileImagePath,
+                        Entry = y
+                    };
+                })
+                .ToList();
         }
 
         public async Task<List<FeedEntryResponse>> GetFeedPageByAuthor(string authorId, DateTime startTime, int skip,
@@ -107,7 +109,7 @@ namespace Achiever.Core.Feed
             var ids = idsTask.Result;
             var author = authorTask.Result.First();
 
-            var entries = await _feedRepository.GetByIds(ids);
+            var entries = await GetByIds(ids);
 
             return entries.OrderByDescending(x => x.CreatedAt)
                 .Select(y => new FeedEntryResponse

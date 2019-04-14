@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Achiever.Core;
-using Achiever.Core.DbInterfaces;
 using Achiever.Core.Models;
 using Achiever.Core.Models.User;
 using Microsoft.AspNetCore.Authorization;
@@ -121,6 +121,38 @@ namespace Achiever.Web.Controllers
             return new EntriesCountDto
             {
                 Count = count
+            };
+        }
+
+        [HttpGet]
+        [Route("getFollowers/{userId}")]
+        public async Task<AllUsersDto> GetFollowers(string userId)
+        {
+            var result = await _userService.GetFollowers(userId);
+
+            return new AllUsersDto
+            {
+                AllUsers = result.Select(x => new UserDto
+                {
+                    User = x,
+                    Following = _currentUser.User.FollowingIds.Contains(x.Id)
+                }).ToList()
+            };
+        }
+
+        [HttpGet]
+        [Route("getFollowings/{userId}")]
+        public async Task<AllUsersDto> GetFollowings(string userId)
+        {
+            var result = await _userService.GetFollowings(userId);
+            
+            return new AllUsersDto
+            {
+                AllUsers = result.Select(x => new UserDto
+                {
+                    User = x,
+                    Following = _currentUser.User.FollowingIds.Contains(x.Id)
+                }).ToList()
             };
         }
     }

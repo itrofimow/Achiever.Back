@@ -52,13 +52,17 @@ namespace Achiever.Web.Controllers
 
         //[Authorize]
         [HttpGet]
-        [Route("authorOne/{index}")]
-        public async Task<FeedEntryResponse> GetAuthorOne(int index, string authorId)
+        [Route("authorOne/{index}/{authorId}")]
+        public async Task<FeedPageResponse> GetAuthorOne(int index, string authorId)
         {
-            var entries = await _feedService.GetFeedPageByAuthor(authorId, DateTime.Now, 0, 20);
+            var entries = await _feedService.GetFeedPageByAuthor(authorId, DateTime.Now, 
+                PageSize * index, PageSize);
             entries.ForEach(x => x.IsLiked = x.Entry.Likes.Contains(_currentUser.User.Id));
-
-            return entries[index % entries.Count];
+            
+            return new FeedPageResponse
+            {
+                Entries = entries
+            };
         }
 
         [HttpPut]
