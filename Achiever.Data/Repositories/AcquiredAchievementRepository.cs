@@ -22,7 +22,7 @@ namespace Achiever.Data.Repositories
         }
 
         public Task Create(AcquiredAchievement achievement)
-        {
+        {   
             return _context.For<AcquiredAchievement>()
                 .InsertOneAsync(achievement);
         }

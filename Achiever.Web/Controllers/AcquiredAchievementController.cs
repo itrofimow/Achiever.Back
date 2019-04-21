@@ -51,5 +51,25 @@ namespace Achiever.Web.Controllers
                 }).ToList()
             };
         }
+
+        [HttpGet]
+        [Route("my/check/{achievementId}")]
+        public async Task<AcquiredAtDto> Check(string achievementId)
+        {
+            var acquiredAt = await _acquiredAchievementService.CheckUserHas(_currentUser.UserId, achievementId);
+            
+            return new AcquiredAtDto()
+            {
+                Value = !string.IsNullOrEmpty(acquiredAt),
+                When = acquiredAt
+            };
+        }
+    }
+
+    public class AcquiredAtDto
+    {
+        public bool Value { get; set; }
+
+        public string When { get; set; }
     }
 }

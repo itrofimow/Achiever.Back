@@ -140,6 +140,9 @@ namespace Achiever.Data.Repositories
             if (!string.IsNullOrEmpty(model.ProfileImagePath))
                 update = update.Set(x => x.ProfileImagePath, model.ProfileImagePath);
 
+            if (!string.IsNullOrEmpty(model.DisplayName))
+                update = update.Set(x => x.DisplayName, model.DisplayName);
+
             return _context.For<User>()
                 .FindOneAndUpdateAsync(filter, update, new FindOneAndUpdateOptions<User>
                 {

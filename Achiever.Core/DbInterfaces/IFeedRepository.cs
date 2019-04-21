@@ -16,6 +16,9 @@ namespace Achiever.Core.DbInterfaces
 
         Task<List<string>> GetForAuthor(string authorId, DateTime startTime, int skip, int limit);
 
+        Task<List<(string, string)>> GetForAchievement(string achievementId, DateTime startTime,
+            int skip, int limit);
+
         Task<bool> LikeOrUnlike(string userId, string feedEntryId);
 
         Task AddComment(string feedEntryId, FeedEntryComment comment);

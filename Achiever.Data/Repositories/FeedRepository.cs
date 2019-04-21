@@ -114,6 +114,33 @@ namespace Achiever.Data.Repositories
                 .UpdateOneAsync(filter, update);
         }
 
+        public async Task<List<(string, string)>> GetForAchievement(string achievementId, DateTime startTime,
+            int skip, int limit)
+        {
+            var filter = Builders<FeedEntry>.Filter.Where(
+                x => x.AchievementId == achievementId && x.CreatedAt <= startTime);
+
+            var sort = Builders<FeedEntry>.Sort.Descending(x => x.CreatedAt);
+
+            var cursor = await _context.For<FeedEntry>()
+                .FindAsync(filter, new FindOptions<FeedEntry>
+                {
+                    Sort = sort,
+                    Skip = skip,
+                    Limit = limit,
+                    Projection = 
+                        Builders<FeedEntry>.Projection.Combine(
+                            Builders<FeedEntry>.Projection.Include(x => x.Id),
+                            Builders<FeedEntry>.Projection.Include(x => x.AuthorId))
+                });
+
+            var entries = await cursor.ToListAsync(); 
+
+            return entries.Select(x => 
+                (achievementId: x.Id, authorId: x.AuthorId))
+                .ToList();
+        }
+
         public Task<long> CountByAuthor(string authorId)
         {
             return _context.For<FeedEntry>()

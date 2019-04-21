@@ -17,6 +17,9 @@ namespace Achiever.Core.Feed
 
         Task<List<FeedEntryResponse>> GetFeedPageByAuthor(string authorId, DateTime startTime, int skip, int limit);
 
+        Task<List<FeedEntryResponse>> GetFeedPageByAchievement(string achievementId, DateTime startTime,
+            int skip, int limit);
+
         Task LikeOrUnlike(string userId, string userNickname, string feedEntryId);
 
         Task AddComment(string userNickname, string feedEntryId, FeedEntryComment comment);
@@ -121,10 +124,44 @@ namespace Achiever.Core.Feed
                 .ToList();
         }
 
+        public async Task<List<FeedEntryResponse>> GetFeedPageByAchievement(string achievementId, DateTime startTime,
+            int skip, int limit)
+        {
+            var ids = await _feedRepository.GetForAchievement(achievementId, startTime, skip, limit);
+
+            var entriesTask = GetByIds(ids.Select(x => x.Item1).ToList());
+            var authorsTask = _userRepository.GetByIds(ids.Select(x => x.Item2).ToList());
+
+            await Task.WhenAll(entriesTask, authorsTask);
+            
+            var entries = entriesTask.Result;
+            var authors = authorsTask.Result;
+            
+            return entries.OrderByDescending(x => x.CreatedAt)
+                .Select(y =>
+                {
+                    var author = authors.Single(x => x.Id == y.AuthorId);
+                    return new FeedEntryResponse
+                    {
+                        AuthorNickname = author.Nickname,
+                        AuthorProfileImagePath = author.ProfileImagePath,
+                        Entry = y
+                    };
+                })
+                .ToList();
+        }
+
         private async Task<List<FeedEntry>> GetByIds(List<string> ids)
         {
             var entries = await _feedRepository.GetByIds(ids);
 
+            await ProcessAuthors(entries);
+
+            return entries;
+        }
+
+        private async Task ProcessAuthors(List<FeedEntry> entries)
+        {
             var allCommentAuthorsIds = entries.SelectMany(x => x.Comments).Select(y => y.AuthorId).ToList();
             var allCommentAuthors = await _userRepository.GetByIds(allCommentAuthorsIds);
             
@@ -138,8 +175,6 @@ namespace Achiever.Core.Feed
                 y.AuthorNickname = author.Nickname;
                 y.AuthorProfileImage = author.ProfileImagePath;
             }));
-
-            return entries;
         }
     }
 }

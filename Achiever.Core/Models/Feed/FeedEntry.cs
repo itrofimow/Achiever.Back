@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Achiever.Common;
+using Achiever.Utils;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -30,7 +31,7 @@ namespace Achiever.Core.Models.Feed
 
         [BsonIgnore] public int LikesCount { get; set; }
 
-        public string When => DateTimeMapper.DeltaToString(CreatedAt);
+        public string When => TimeDeltaUtils.ToHumanReadable(CreatedAt, DateTime.Now - CreatedAt);
 
 
         public List<FeedEntryComment> Comments { get; set; } = new List<FeedEntryComment>();
@@ -44,19 +45,13 @@ namespace Achiever.Core.Models.Feed
 
         public string AuthorId { get; set; }
 
+        public DateTime CreatedAt { get; set; }
+
+        public string When => TimeDeltaUtils.ToHumanReadable(CreatedAt, DateTime.Now - CreatedAt);
+
         [BsonIgnore] public string AuthorProfileImage { get; set; }
 
         [BsonIgnore] public string AuthorNickname { get; set; }
-    }
-
-    public static class DateTimeMapper
-    {
-        public static string DeltaToString(DateTime datetime)
-        {
-            var delta = DateTime.Now - datetime;
-
-            return $"{delta.TotalMinutes} минут назад";
-        }
     }
 }
 

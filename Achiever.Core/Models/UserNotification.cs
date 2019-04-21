@@ -1,6 +1,7 @@
 using System;
 using Achiever.Common;
 using Achiever.Core.Models.Feed;
+using Achiever.Utils;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -35,6 +36,8 @@ namespace Achiever.Core.Models
         public string FeedEntryId { get; set; }
 
         public DateTime CreatedAt { get; set; }
+
+        public string When => TimeDeltaUtils.ToHumanReadable(CreatedAt, DateTime.Now - CreatedAt);
     }
 
     public enum UserNotificationType

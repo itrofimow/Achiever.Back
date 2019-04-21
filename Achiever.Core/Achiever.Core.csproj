@@ -4,6 +4,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Achiever.Common\Achiever.Common.csproj" />
+    <ProjectReference Include="..\Achiever.Utils\Achiever.Utils.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="FirebaseAdmin">

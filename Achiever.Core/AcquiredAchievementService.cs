@@ -1,9 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Achiever.Core.DbInterfaces;
 using Achiever.Core.Models;
 using Achiever.Core.Models.User;
+using Achiever.Utils;
 
 namespace Achiever.Core
 {
@@ -12,8 +14,10 @@ namespace Achiever.Core
         Task<List<Achievement>> GetByOwnerAndCategory(string ownerId, string categoryId);
 
         Task<List<User>> GetFollowingsWhoHave(string achievementId, string userId);
+
+        Task<string> CheckUserHas(string userId, string achievementId);
     }
-    
+
     public class AcquiredAchievementService : IAcquiredAchievementService
     {
         private readonly IAcquiredAchievementRepository _acquiredAchievementRepository;
@@ -29,7 +33,18 @@ namespace Achiever.Core
             _achievementRepository = achievementRepository;
             _userRepository = userRepository;
         }
-        
+
+        public async Task<string> CheckUserHas(string userId, string achievementId)
+        {
+            var achievements = await _acquiredAchievementRepository.GetByOwnersAndAchievementId(achievementId,
+                new List<string> {userId});
+
+            if (achievements.Count == 0) return null;
+
+            return TimeDeltaUtils.ToHumanReadable(
+                achievements[0].AcquiredAt, DateTime.Now - achievements[0].AcquiredAt);
+        }
+
         public async Task<List<Achievement>> GetByOwnerAndCategory(string ownerId, string categoryId)
         {
             var allAchievements = (await _acquiredAchievementRepository.GetByOwner(ownerId))

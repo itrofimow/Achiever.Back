@@ -3,6 +3,7 @@ using System.Linq;
 using Achiever.Common;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using Newtonsoft.Json;
 
 namespace Achiever.Core.Models.User
 {
@@ -12,13 +13,17 @@ namespace Achiever.Core.Models.User
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
+        [JsonIgnore]
         public string FirebaseToken { get; set; }
 
         public string Nickname { get; set; }
 
+        [JsonIgnore]
         public string Password { get; set; }
 
         public string About { get; set; }
+
+        public string DisplayName { get; set; }
 
         public string ProfileImagePath { get; set; }
 

@@ -20,6 +20,8 @@ namespace Achiever.Core.Models.Feed
         [BsonRepresentation(BsonType.ObjectId)]
         public string FeedEntryId { get; set; }
 
+        //public string AchievementId { get; set; }
+
         public DateTime CreatedAt { get; set; }
 
         public DateTime InsertedAt { get; set; }

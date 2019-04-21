@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Achiever.Core;
@@ -94,19 +95,14 @@ namespace Achiever.Web.Controllers
             var model = new User
             {
                 Nickname = request.Nickname,
-                About = request.About
+                About = request.About,
+                DisplayName = request.DisplayName
             };
             
             if (request.Image != null)
             {
-                var filename = await _fileService.GetSaveFilename();
-
-                using (var stream = _fileService.GetSaveFileStream(filename))
-                {
-                    await request.Image.CopyToAsync(stream);
-                }
-
-                model.ProfileImagePath = "uploads/" + filename;
+                model.ProfileImagePath = await _fileService.SaveFile(
+                    request.Image.OpenReadStream());
             }
 
             return await _userService.Update(_currentUser.UserId, model);
@@ -198,7 +194,7 @@ namespace Achiever.Web.Controllers
     {
         public IFormFile Image { get; set; }
 
-        public string DisplayedName { get; set; }
+        public string DisplayName { get; set; }
 
         public string Nickname { get; set; }
 

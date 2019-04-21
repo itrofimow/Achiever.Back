@@ -65,6 +65,20 @@ namespace Achiever.Web.Controllers
             };
         }
 
+        [HttpGet]
+        [Route("achievementOne/{index}/{achievementId}")]
+        public async Task<FeedPageResponse> GetAchievementOne(int index, string achievementId)
+        {
+            var entries = await _feedService.GetFeedPageByAchievement(achievementId, DateTime.Now,
+                PageSize * index, PageSize);
+            entries.ForEach(x => x.IsLiked = x.Entry.Likes.Contains(_currentUser.UserId));
+            
+            return new FeedPageResponse
+            {
+                Entries = entries
+            };
+        }
+
         [HttpPut]
         [Route("like/{feedEntryId}")]
         public async Task LikeOrUnlike(string feedEntryId)
@@ -77,6 +91,7 @@ namespace Achiever.Web.Controllers
         public async Task<FeedEntryComment> AddComment(string feedEntryId, [FromBody] FeedEntryComment comment)
         {
             comment.AuthorId = _currentUser.UserId;
+            comment.CreatedAt = DateTime.Now;
             await _feedService.AddComment(_currentUser.User.Nickname, feedEntryId, comment);
 
             comment.AuthorNickname = _currentUser.User.Nickname;
@@ -89,6 +104,8 @@ namespace Achiever.Web.Controllers
         [Consumes("multipart/form-data")]
         public async Task CreateEntry([FromForm] CreateFeedEntryByAchievementRequest request)
         {
+            if (request.Files?.Count > 10) throw new InvalidOperationException();
+            
             var acquiredAchievement = new AcquiredAchievement
             {
                 AchievementId = request.AchievementId,
@@ -103,20 +120,13 @@ namespace Achiever.Web.Controllers
                 AuthorId = _currentUser.User.Id,
                 CreatedAt = DateTime.Now,
                 Comment = request.Comment,
-                Images = request.Files?.Select(file => $"uploads/{file.FileName}").ToList() ?? new List<string>()
+                Images = new List<string>()
             };
 
             if (request.Files != null)
             {
-                var imagesCopyTasks = request.Files.Select(async file =>
-                {
-                    using (var stream = _fileService.GetSaveFileStream(file.FileName))
-                    {
-                        await file.CopyToAsync(stream);
-                    }
-                });
-
-                await Task.WhenAll(imagesCopyTasks);
+                var imagesCopyTasks = request.Files.Select(file => _fileService.SaveFile(file.OpenReadStream()));
+                feedEntry.Images = (await Task.WhenAll(imagesCopyTasks)).ToList();
             }
 
             await _feedService.CreateEntry(_currentUser.User, feedEntry);
