@@ -23,6 +23,8 @@ namespace Achiever.Core.Feed
         Task LikeOrUnlike(string userId, string userNickname, string feedEntryId);
 
         Task AddComment(string userNickname, string feedEntryId, FeedEntryComment comment);
+
+        Task<List<User>> GetLikes(string feedEntryId);
     }
     
     public class FeedService : IFeedService
@@ -75,6 +77,14 @@ namespace Achiever.Core.Feed
                 await _notificationService.ProcessComment(user, feedEntry.AuthorId, feedEntryId, comment);
         }
 
+        public async Task<List<User>> GetLikes(string feedEntryId)
+        {
+            var feedEntry = (await _feedRepository.GetByIds(new List<string> {feedEntryId}))
+                .Single();
+
+            return await _userRepository.GetByIds(feedEntry.Likes);
+        }
+
         public async Task<List<FeedEntryResponse>> GetFeedPageByOwner(string feedOwnerId, DateTime startTime, int skip, int limit)
         {
             var globalEntries = await _globalFeedRepository.GetForOwner(feedOwnerId, startTime, skip, limit);
@@ -95,7 +105,7 @@ namespace Achiever.Core.Feed
                     {
                         AuthorNickname = author.Nickname,
                         AuthorProfileImagePath = author.ProfileImagePath,
-                        Entry = y
+                        Entry = y,
                     };
                 })
                 .ToList();
@@ -119,7 +129,7 @@ namespace Achiever.Core.Feed
                 {
                     AuthorNickname = author.Nickname,
                     AuthorProfileImagePath = author.ProfileImagePath,
-                    Entry = y
+                    Entry = y,
                 })
                 .ToList();
         }
@@ -145,7 +155,7 @@ namespace Achiever.Core.Feed
                     {
                         AuthorNickname = author.Nickname,
                         AuthorProfileImagePath = author.ProfileImagePath,
-                        Entry = y
+                        Entry = y,
                     };
                 })
                 .ToList();
@@ -156,13 +166,15 @@ namespace Achiever.Core.Feed
             var entries = await _feedRepository.GetByIds(ids);
 
             await ProcessAuthors(entries);
+            await ProcessLikes(entries);
 
             return entries;
         }
 
         private async Task ProcessAuthors(List<FeedEntry> entries)
         {
-            var allCommentAuthorsIds = entries.SelectMany(x => x.Comments).Select(y => y.AuthorId).ToList();
+            var allCommentAuthorsIds = entries.SelectMany(x => x.Comments).Select(y => y.AuthorId)
+                .Distinct().ToList();
             var allCommentAuthors = await _userRepository.GetByIds(allCommentAuthorsIds);
             
             var allCommentAuthorsDict = new Dictionary<string, User>();
@@ -175,6 +187,23 @@ namespace Achiever.Core.Feed
                 y.AuthorNickname = author.Nickname;
                 y.AuthorProfileImage = author.ProfileImagePath;
             }));
+        }
+
+        private async Task ProcessLikes(List<FeedEntry> entries)
+        {
+            var allLikedIds = entries.SelectMany(x => x.Likes)
+                .Distinct().ToList();
+            var allLikedUsers = await _userRepository.GetByIds(allLikedIds);
+            
+            var allLikedUsersDict = new Dictionary<string, User>();
+            allLikedUsers.ForEach(x => allLikedUsersDict[x.Id] = x);
+            
+            entries.ForEach(x => { 
+                x.LikedUsers = x.Likes.Select(y => new CoreUserDto
+                {
+                    User = allLikedUsersDict[y]
+                }).ToList();   
+            });
         }
     }
 }

@@ -88,7 +88,8 @@ namespace Achiever.Data.Repositories
                 {
                     Id = y.Id,
                     Nickname = y.Nickname,
-                    ProfileImagePath = y.ProfileImagePath
+                    ProfileImagePath = y.ProfileImagePath,
+                    DisplayName = y.DisplayName
                 })
                 .ToListAsync();
         }
@@ -147,7 +148,6 @@ namespace Achiever.Data.Repositories
                 .FindOneAndUpdateAsync(filter, update, new FindOneAndUpdateOptions<User>
                 {
                     ReturnDocument = ReturnDocument.After,
-                    Projection = Builders<User>.Projection.Exclude(x => x.Password)
                 });
         }
 

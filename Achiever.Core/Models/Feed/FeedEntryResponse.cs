@@ -1,5 +1,15 @@
+
+using System.Collections.Generic;
+
 namespace Achiever.Core.Models.Feed
 {
+    public class CoreUserDto
+    {
+        public User.User User { get; set; }
+
+        public bool Following { get; set; }    
+    }
+    
     public class FeedEntryResponse
     {
         public string AuthorProfileImagePath { get; set; }

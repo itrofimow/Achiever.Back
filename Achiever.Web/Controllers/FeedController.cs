@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Achiever.Core;
@@ -7,6 +8,7 @@ using Achiever.Core.DbInterfaces;
 using Achiever.Core.Feed;
 using Achiever.Core.Models;
 using Achiever.Core.Models.Feed;
+using Achiever.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -38,45 +40,66 @@ namespace Achiever.Web.Controllers
         
         [HttpGet]
         [Route("one/{index}")]
-        public async Task<FeedPageResponse> GetMyOne(int index)
+        public async Task<FeedPageResponse> GetMyOne(int index, string startedAt)
         {
-            var entries = await _feedService.GetFeedPageByOwner(_currentUser.User.Id, DateTime.Now,
+            var startedAtTime = string.IsNullOrEmpty(startedAt) 
+                ? DateTime.Now 
+                : DateTimeUtils.ParseIso8601(startedAt);
+            
+            var entries = await _feedService.GetFeedPageByOwner(_currentUser.User.Id, startedAtTime,
                 PageSize * index, PageSize);
-            entries.ForEach(x => x.IsLiked = x.Entry.Likes.Contains(_currentUser.User.Id));
+            MapFeedEntries(entries);
 
             return new FeedPageResponse
             {
-                Entries = entries
+                Entries = entries,
+                StartedAt = startedAtTime
             };
         }
 
-        //[Authorize]
         [HttpGet]
         [Route("authorOne/{index}/{authorId}")]
-        public async Task<FeedPageResponse> GetAuthorOne(int index, string authorId)
+        public async Task<FeedPageResponse> GetAuthorOne(int index, string authorId, string startedAt)
         {
-            var entries = await _feedService.GetFeedPageByAuthor(authorId, DateTime.Now, 
+            var startedAtTime = string.IsNullOrEmpty(startedAt) 
+                ? DateTime.Now 
+                : DateTimeUtils.ParseIso8601(startedAt);
+            
+            var entries = await _feedService.GetFeedPageByAuthor(authorId, startedAtTime, 
                 PageSize * index, PageSize);
-            entries.ForEach(x => x.IsLiked = x.Entry.Likes.Contains(_currentUser.User.Id));
+            MapFeedEntries(entries);
             
             return new FeedPageResponse
             {
-                Entries = entries
+                Entries = entries,
+                StartedAt = startedAtTime
             };
         }
 
         [HttpGet]
         [Route("achievementOne/{index}/{achievementId}")]
-        public async Task<FeedPageResponse> GetAchievementOne(int index, string achievementId)
+        public async Task<FeedPageResponse> GetAchievementOne(int index, string achievementId, string startedAt)
         {
-            var entries = await _feedService.GetFeedPageByAchievement(achievementId, DateTime.Now,
+            var startedAtTime = string.IsNullOrEmpty(startedAt) 
+                ? DateTime.Now 
+                : DateTimeUtils.ParseIso8601(startedAt);
+            
+            var entries = await _feedService.GetFeedPageByAchievement(achievementId, startedAtTime,
                 PageSize * index, PageSize);
-            entries.ForEach(x => x.IsLiked = x.Entry.Likes.Contains(_currentUser.UserId));
+            MapFeedEntries(entries);
             
             return new FeedPageResponse
             {
-                Entries = entries
+                Entries = entries,
+                StartedAt = startedAtTime
             };
+        }
+
+        private void MapFeedEntries(List<FeedEntryResponse> entries)
+        {
+            entries.ForEach(x => x.IsLiked = x.Entry.Likes.Contains(_currentUser.UserId));
+            entries.ForEach(x => x.Entry.LikedUsers.ForEach(
+                y => y.Following = _currentUser.User.FollowingIds.Contains(y.User.Id)));
         }
 
         [HttpPut]
@@ -100,6 +123,7 @@ namespace Achiever.Web.Controllers
             return comment;
         }
 
+        [RequestSizeLimit(32 * 1000 * 1000)]
         [HttpPost]
         [Consumes("multipart/form-data")]
         public async Task CreateEntry([FromForm] CreateFeedEntryByAchievementRequest request)
@@ -131,10 +155,28 @@ namespace Achiever.Web.Controllers
 
             await _feedService.CreateEntry(_currentUser.User, feedEntry);
         }
+
+        [HttpGet]
+        [Route("likes/{feedEntryId}")]
+        public async Task<AllUsersDto> GetLikes(string feedEntryId)
+        {
+            var likes = await _feedService.GetLikes(feedEntryId);
+
+            return new AllUsersDto
+            {
+                AllUsers = likes.Select(x => new UserDto
+                    {
+                        Following = _currentUser.User.FollowingIds.Contains(x.Id),
+                        User = x
+                    })
+                    .ToList()
+            };
+        }
     }
 
     public class FeedPageResponse
     {
+        public DateTime StartedAt { get; set; }
         public List<FeedEntryResponse> Entries { get; set; }
     }
 

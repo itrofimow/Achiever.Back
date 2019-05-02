@@ -17,5 +17,7 @@ namespace Achiever.Core.Models
         public int MaskHeight { get; set; }
 
         public string MaskImagePath { get; set; }
+
+        public string NiceImagePath { get; set; }
     }
 }

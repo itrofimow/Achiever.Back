@@ -4,6 +4,7 @@ using Achiever.Common;
 using Achiever.Utils;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using Newtonsoft.Json;
 
 namespace Achiever.Core.Models.Feed
 {
@@ -28,6 +29,8 @@ namespace Achiever.Core.Models.Feed
         public List<string> Images { get; set; } = new List<string>();
 
         public List<string> Likes { get; set; } = new List<string>();
+
+        [BsonIgnore] public List<CoreUserDto> LikedUsers { get; set; }
 
         [BsonIgnore] public int LikesCount { get; set; }
 

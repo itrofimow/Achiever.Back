@@ -11,13 +11,13 @@ namespace Achiever.Web.Controllers
         {
             return new CurrentTimeResponse
             {
-                CurrentTime = DateTime.Now
+                CurrentTime = DateTime.Now.ToString("")
             };
         }
     }
 
     public class CurrentTimeResponse
     {
-        public DateTime CurrentTime { get; set; }
+        public string CurrentTime { get; set; }
     }
 }
