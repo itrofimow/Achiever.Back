@@ -44,8 +44,10 @@ namespace Achiever.Data.Repositories
 
         public Task<List<Achievement>> GetAllByCategory(string categoryId)
         {
-            return _context.For<Achievement>()
-                .Find(x => x.AchievementCategoryId == categoryId)
+            var aggregation = _context.For<Achievement>().Aggregate()
+                .Match(x => x.AchievementCategoryId == categoryId);
+            
+            return LookupProject(aggregation)
                 .ToListAsync();
         }
         

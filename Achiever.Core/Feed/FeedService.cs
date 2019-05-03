@@ -33,17 +33,20 @@ namespace Achiever.Core.Feed
         private readonly IGlobalFeedRepository _globalFeedRepository;
         private readonly IUserRepository _userRepository;
         private readonly INotificationService _notificationService;
+        private readonly IAchievementCategoryRepository _achievementCategoryRepository;
 
         public FeedService(
             IFeedRepository feedRepository,
             IGlobalFeedRepository globalFeedRepository,
             IUserRepository userRepository,
-            INotificationService notificationService)
+            INotificationService notificationService,
+            IAchievementCategoryRepository achievementCategoryRepository)
         {
             _feedRepository = feedRepository;
             _globalFeedRepository = globalFeedRepository;
             _userRepository = userRepository;
             _notificationService = notificationService;
+            _achievementCategoryRepository = achievementCategoryRepository;
         }
 
         public async Task CreateEntry(User user, FeedEntry entry)
@@ -165,8 +168,10 @@ namespace Achiever.Core.Feed
         {
             var entries = await _feedRepository.GetByIds(ids);
 
-            await ProcessAuthors(entries);
-            await ProcessLikes(entries);
+            await Task.WhenAll(
+                ProcessAuthors(entries),
+                ProcessLikes(entries),
+                ProcessCategories(entries));
 
             return entries;
         }
@@ -204,6 +209,17 @@ namespace Achiever.Core.Feed
                     User = allLikedUsersDict[y]
                 }).ToList();   
             });
+        }
+
+        private async Task ProcessCategories(List<FeedEntry> entries)
+        {
+            var allCategoriesIds = entries.Select(x => x.Achievement.AchievementCategoryId)
+                .Distinct().ToList();
+            var allCategories = await _achievementCategoryRepository.GetByIds(allCategoriesIds);
+
+            var allCategoriesDict = allCategories.ToDictionary(x => x.Id);
+            
+            entries.ForEach(x => { x.Achievement.Category = allCategoriesDict[x.Achievement.AchievementCategoryId]; });
         }
     }
 }

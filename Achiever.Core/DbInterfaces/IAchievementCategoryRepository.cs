@@ -10,6 +10,8 @@ namespace Achiever.Core.DbInterfaces
 
         Task<AchievementCategory> GetById(string id);
 
+        Task<List<AchievementCategory>> GetByIds(List<string> ids);
+
         Task<List<AchievementCategory>> GetAll();
     }
 }

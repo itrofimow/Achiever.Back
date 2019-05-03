@@ -28,6 +28,13 @@ namespace Achiever.Data.Repositories
                 .SingleOrDefaultAsync();
         }
 
+        public Task<List<AchievementCategory>> GetByIds(List<string> ids)
+        {
+            return _context.For<AchievementCategory>()
+                .Find(x => ids.Contains(x.Id))
+                .ToListAsync();
+        }
+
         public Task<List<AchievementCategory>> GetAll()
         {
             return _context.For<AchievementCategory>()
