@@ -37,18 +37,26 @@ namespace Achiever.Web.Controllers
             var achievement = new Achievement
             {
                 Title = request.Title,
-                Description = request.Description
+                Description = request.Description,
+                AchievementCategoryId = request.CategoryId
             };
 
-            //achievement.BackgroundImage = await Process(request.BackgroundImage);
-            //achievement.FrontImage = await Process(request.FrontImage);
-            achievement.BigImage = await Process(request.BigImage);
+            var processedImages = await Task.WhenAll(
+                Process(request.BackgroundImage),
+                Process(request.FrontImage),
+                Process(request.BigImage));
+
+            achievement.BackgroundImage = processedImages[0];
+            achievement.FrontImage = processedImages[1];
+            achievement.BigImage = processedImages[2];
 
             await _achievementService.Create(achievement);
         }
 
         private async Task<ImageInfo> Process(IFormFile image)
         {
+            if (image == null) return null;
+
             using (var ms = new MemoryStream())
             {
                 await image.CopyToAsync(ms);
@@ -124,6 +132,8 @@ namespace Achiever.Web.Controllers
         public string Title { get; set; }
 
         public string Description { get; set; }
+
+        public string CategoryId { get; set; }
 
         public IFormFile BackgroundImage { get; set; }
 
