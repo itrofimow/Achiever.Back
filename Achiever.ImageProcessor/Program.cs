@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 
-namespace Achiever.Web
+namespace Achiever.ImageProcessor
 {
     public class Program
     {
@@ -13,7 +13,7 @@ namespace Achiever.Web
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
                 .UseKestrel()
-                .UseUrls("http://0.0.0.0:1337")
+                .UseUrls("http://0.0.0.0:1339")
                 .UseStartup<Startup>();
     }
 }

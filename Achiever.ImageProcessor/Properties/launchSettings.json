@@ -1,0 +1,10 @@
+﻿{
+  "profiles": {
+    "Achiever.ImageProcessor": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

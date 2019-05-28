@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.2</TargetFramework>
+        <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Horarium">
+          <Version>1.0.0-alpha7</Version>
+        </PackageReference>
+        <PackageReference Include="Horarium.Mongo">
+          <Version>1.0.0-alpha7</Version>
+        </PackageReference>
+        <PackageReference Include="Microsoft.AspNetCore.App" />
+        <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Achiever.Core\Achiever.Core.csproj" />
+      <ProjectReference Include="..\Achiever.Data\Achiever.Data.csproj" />
+    </ItemGroup>
+
+</Project>

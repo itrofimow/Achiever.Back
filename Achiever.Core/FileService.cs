@@ -13,19 +13,24 @@ namespace Achiever.Core
         Task<string> SaveFile(Stream file);
 
         Task<string> SaveFile(byte[] file);
+
+        string UploadsDirectory { get; }
     }
     
     public class FileService : IFileService
     {
-        private const string UploadsDirectory = "uploads";
+        private const string UploadsDirectorySuffix = "uploads";
         
         private readonly string _webRoot;
         private readonly IFilesRepository _filesRepository;
 
+        public string UploadsDirectory { get; }
+
         public FileService(string webRoot, IFilesRepository filesRepository)
         {
-            _webRoot = Path.Combine(webRoot, "images", UploadsDirectory);
+            _webRoot = Path.Combine(webRoot, "images", UploadsDirectorySuffix);
             Directory.CreateDirectory(_webRoot);
+            UploadsDirectory = _webRoot;
 
             _filesRepository = filesRepository;
         }
@@ -49,7 +54,7 @@ namespace Achiever.Core
                 await file.CopyToAsync(fs);
             }
 
-            return $"{UploadsDirectory}/{filename}";
+            return $"{UploadsDirectorySuffix}/{filename}";
         }
 
         public async Task<string> SaveFile(byte[] file)

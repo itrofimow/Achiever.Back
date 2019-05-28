@@ -33,7 +33,7 @@ namespace Achiever.Web
                     new Claim(CustomClaimTypes.Id, user.Id),
                     new Claim(CustomClaimTypes.Nickname, user.Nickname), 
                 }),
-                Expires = DateTime.Now.AddDays(1),
+                Expires = DateTime.Now.AddYears(1),
                 SigningCredentials =
                     new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Achiever.Core;
@@ -23,6 +24,7 @@ namespace Achiever.Web.Controllers
         private readonly IFeedService _feedService;
         private readonly IFileService _fileService;
         private readonly ICurrentUser _currentUser;
+        private readonly IImageProcessingService _imageProcessingService;
 
         private const int PageSize = 20;
 
@@ -30,12 +32,14 @@ namespace Achiever.Web.Controllers
             IAcquiredAchievementRepository acquiredAchievementRepository,
             IFeedService feedService,
             IFileService fileService,
-            ICurrentUser currentUser)
+            ICurrentUser currentUser,
+            IImageProcessingService imageProcessingService)
         {
             _acquiredAchievementRepository = acquiredAchievementRepository;
             _feedService = feedService;
             _fileService = fileService;
             _currentUser = currentUser;
+            _imageProcessingService = imageProcessingService;
         }
         
         [HttpGet]
@@ -149,8 +153,15 @@ namespace Achiever.Web.Controllers
 
             if (request.Files != null)
             {
-                var imagesCopyTasks = request.Files.Select(file => _fileService.SaveFile(file.OpenReadStream()));
-                feedEntry.Images = (await Task.WhenAll(imagesCopyTasks)).ToList();
+                var imagesCopyTasks = request.Files.Select(async file =>
+                {
+                    var ms = new MemoryStream();
+                    await file.CopyToAsync(ms);
+                    
+                    return await _imageProcessingService.SaveImage(ms);
+                });
+                feedEntry.Images = (await Task.WhenAll(imagesCopyTasks))
+                    .Select(x => x.ImagePath).ToList();
             }
 
             await _feedService.CreateEntry(_currentUser.User, feedEntry);
