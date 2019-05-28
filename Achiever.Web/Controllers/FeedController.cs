@@ -157,7 +157,8 @@ namespace Achiever.Web.Controllers
                 {
                     var ms = new MemoryStream();
                     await file.CopyToAsync(ms);
-                    
+
+                    ms.Position = 0;
                     return await _imageProcessingService.SaveImage(ms);
                 });
                 feedEntry.Images = (await Task.WhenAll(imagesCopyTasks))
