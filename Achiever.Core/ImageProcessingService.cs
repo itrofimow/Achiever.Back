@@ -48,10 +48,12 @@ namespace Achiever.Core
 
         public ImageInfo DownscaleImage(string filePath, Stream dataStream, Stream destination)
         {
-            //var originalImage = SKBitmap.Decode($"{_fileService.UploadsDirectory}/{id}");
+            const float size = 600;
+            
             var originalImage = SKBitmap.Decode(dataStream);
 
-            var scale = 512.0f / originalImage.Width;
+            var scale = Math.Min(1,
+                Math.Max(size / originalImage.Width, size / originalImage.Width));
             
             var resultName = $"{filePath}_downscaled";
             int resultWidth;
@@ -68,7 +70,7 @@ namespace Achiever.Core
                     
                     using (var data = image.Encode(SKEncodedImageFormat.Webp, 100))
                     {
-                            data.SaveTo(destination);
+                        data.SaveTo(destination);
                     }
                 }
             }
